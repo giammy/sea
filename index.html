@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+/*
+ * SeA - Sintomi e Azioni
+ * Copyright (C) 2018 - Gianluca Moro - giangiammy@gmail.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+-->
+
+<head>
+  <title>SeA - Sintomi e Azioni</title>
+
+  <!-- JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+  <!-- split panes - https://nathancahill.github.io/Split.js/ -->
+  <script src="js/split.min.js"></script>
+
+  <!-- core app -->
+  <link rel="stylesheet" href="css/seaSplit.css">
+  <script type="text/javascript" src="sea.json"></script>
+  <script src="js/sea.js"></script>
+
+<script>
+
+function checkOnlineDataUpdateTODO(currentData) {
+
+  var url = "http://giammy.com/sea/sea.json";
+
+  //include the   'async':false   parameter or the object data won't get captured when loading
+  var json = $.getJSON({'url': url, 'async': false, 'success': function(data) {
+      console.log("Callback NOT USED"); console.log(data.responseText);
+    }});
+  //console.log("Primo "); console.log(json.responseText);
+
+  var str = json.responseText;
+  str = str.substring(str.indexOf("`") + 1);
+  str = str.substring(0, str.indexOf("`"));
+  //console.log(str);
+  localStorage.setItem('localSeaData', data);
+}
+
+function checkDataUpdate(data) {
+//    var localSeaData = localStorage.getItem('localSeaData');
+//    //console.log(data);
+//    if (localSeaData == null) {
+//        localStorage.setItem('localSeaData', data);
+//    } else if (localSeaData.version > data.version) {
+//            data = localSeaData;
+//    }
+//    //checkOnlineDataUpdate(data);
+    return data;
+}
+
+var sea = new SeaData(checkDataUpdate(data));
+
+function updateUI() {
+  //console.log("UpdateUI");
+  //console.log(sea.problemiCorrenti);
+  //console.log(sea.azioniCorrenti);
+  //console.log(sea.sintomiChecked);
+
+  var localStr = "";
+  for (var i=0; i<sea.sintomiAll.length; i++) {
+      colorStr = (sea.sintomiChecked[i])?'red':'green';
+      localStr += "<button style='font-size: 14px; height:50px; width:100%; background-color:"+colorStr+";' onclick='buttonSclick(" +i+")'  >" + sea.sintomiAll[i] + "</button><br>";
+  }
+  $("#sDiv").html(localStr);
+
+  localStr = "";
+  for (var i=0; i<sea.problemiCorrenti.length; i++) {
+      localStr += "<button style='height:50px; width:100%' disabled>" + sea.getProblemaMsg(sea.problemiCorrenti[i]) + "</button><br>";
+  }
+  $("#pDiv").html(localStr);
+
+  localStr = "";
+  for (var i=0; i<sea.azioniCorrenti.length; i++) {
+      localStr += "<button style='font-size: 14px; height:50px; width:100%' disabled>" + sea.getAzioneMsg(sea.azioniCorrenti[i]) + "</button><br>";
+  }
+  $("#aDiv").html(localStr);
+
+}
+
+function buttonSclick(i) {
+  sea.switchSintomo(i);
+  updateUI();
+}
+
+$(document).ready(function(){
+
+  Split(['#a', '#b', '#g'], {
+    gutterSize: 50,
+    sizes: [40, 20, 40],
+    cursor: 'col-resize'
+  });
+
+  updateUI();
+});
+
+</script>
+
+</head>
+<body>
+
+    <center><b>SeA - Sintomi e Azioni, by <a href="http://giammy.com/sea/">Giammy</a> - selezionare i sintomi</b></center>
+
+    <div id="a" class="split split-horizontal">
+      <div id="sDiv">
+      </div> 
+    </div>
+
+    <div id="b" class="split split-horizontal">
+      <div id="pDiv">
+      </div>
+    </div>
+
+    <div id="g" class="split split-horizontal">
+      <div id="aDiv">
+      </div>
+    </div>
+
+</body>
+</html>
